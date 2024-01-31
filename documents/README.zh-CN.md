@@ -28,7 +28,7 @@
 - <b>位移场求解器:</b>对比源网格和目标网格的节点坐标，求解位移场；
 - <b>应变场求解器:</b>结合单元类型，对位移场进行计算，求解应变场；
 - <b>应力场求解器:</b>结合材料属性，对应变场进行计算，求解应力场；
-- <b>输出:</b>以np.ndarray(N, 2)格式输出节点上应力张量, 其中N为节点数量，第1列为节点编号，第2列为元组形式表示的张量值。
+- <b>输出:</b>以`np.ndarray(N, 2)`格式输出节点上应力张量, 其中N为节点数量，第1列为节点编号，第2列为元组形式表示的无量纲张量值(节点平均)。
 
 ## 快速使用
 
@@ -36,12 +36,20 @@
 
 ```
 python main.py source.inp target.inp \
+    --averageMethod='Advanced' \
+    --averageVariation=75 \
+    --useCornerData=True \
     --outputFile=True \
     --tolerance=False \
+    --unit='N-mm'
 ```
 其中可选参数：
+- averageMethod:结果平均方法(默认为`Advanced`)；
+- averageVariation:差异值(百分比，默认为`75`)
+- useCornerData:纳入角节点(默认为`True`)
 - outputFile: 指定输出`.txt`文件(默认为`True`，将保存在`source.inp`所在目录，名称为`result.txt`)；
 - tolerance: 位移容差，位移超出容差的节点不进行应力计算(默认为`False`，目的是避免配准错误造成的计算结果异常，计划在后续V2版本进行开发)；
+- unit:单位制(默认为`'N-mm'`)
 - registration: 配准方法，用于平滑或补偿(默认为`None`，当前版本此参数无影响，计划在后续V2版本进行开发)；
 
 ## 未来工作
