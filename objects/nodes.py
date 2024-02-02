@@ -31,7 +31,25 @@ class Node(object):
             return self._solutions[key]
         
     def setSolution(self, key:str, value):
-        self._solutions[key] = value
+        valueTypeName = type(value).__name__        
+        if valueTypeName == 'dict':
+            if key not in self._solutions.keys():
+                self._solutions[key] = {}
+            for valuekey in value.keys():
+                self._solutions[key][valuekey] = value[valuekey]
+            return
+        else:
+            self._solutions[key] = value
+            
+    def print(self, key:str):
+        '''
+        Print data to TERMINAL
+        '''
+        if key not in self._solutions.keys():
+            return
+        solution = self._solutions[key]
+        output = 'Node label:{} \t {} \t value: \t{}'.format(self.label, key, solution)
+        print(output)
         
     @property
     def id(self) -> int:
@@ -60,3 +78,7 @@ class Node(object):
     @property
     def NFS(self) -> list:
         return self._NFS
+    
+    @property
+    def solutions(self) -> dict:
+        return self._solutions

@@ -1,8 +1,8 @@
-# mesh2stress
+# mesh_Deformation2Stress
 [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 ![Icon](../src/icon.png)
->  根据变形前后的网格计算应力分布。
+>  基于逆有限元(iFEM)的思想和理论，根据变形前后的网格计算应力分布，即通过位移场推算应力场。
 
 ---
 
@@ -17,7 +17,9 @@
 - MIT
 
 ## 说明
-该程序基于变形前后的源网格和目标网格提取位移场，计算应力分布。代码是用<b>python</b>编写的，主要是为了易于阅读和快速开发，因此没有发挥出完全的计算效率。计划后续版本（V2）使用C++语言对核心代码进行优化。
+该程序基于变形前后的源网格和目标网格提取位移场，计算应力分布。为了易于阅读和快速开发，程序使用<b>python</b>编写代码，因此没有发挥出完全的计算效率。计划后续版本（V2）使用C++语言对核心代码进行优化。
+
+输入的变形前后网格应保证节点和单元编号能够对应（允许不完全对应），如下图所示。
 
 ![源网格和目标网格](../src/mesh.png)
 
@@ -43,16 +45,49 @@ python main.py source.inp target.inp \
     --useCornerData=True \
     --outputFile=True \
     --tolerance=False \
-    --unit='N-mm'
+    --unit='N-mm' \
+    --boundary='False' \
 ```
 其中可选参数：
 - averageMethod:结果平均方法(默认为`Advanced`)；
 - averageVariation:差异值(百分比，默认为`75`)
 - useCornerData:纳入角节点(默认为`True`)
 - outputFile: 指定输出`.txt`文件(默认为`True`，将保存在`source.inp`所在目录，名称为`result.txt`)；
-- tolerance: 位移容差，位移超出容差的节点不进行应力计算(默认为`False`，目的是避免配准错误造成的计算结果异常，计划在后续V2版本进行开发)；
+- tolerance: 位移容差，位移超出容差的节点不进行应力计算(默认为`False`，目的是避免配准错误造成的计算结果异常，计划在V2后续版本进行开发)；
 - unit:单位制(默认为`'N-mm'`)
-- registration: 配准方法，用于平滑或补偿(默认为`None`，当前版本此参数无影响，计划在后续V2版本进行开发)；
+- boundary:边界点监测(默认为`False`，开启后将视0位移边界点为固定约束，并基于力学平衡进行补偿计算，当前版本此参数无影响，计划在V2后续版本进行开发)
+- registration: 配准方法，用于平滑或补偿(默认为`None`，当前版本此参数无影响，计划在V2后续版本进行开发)；
+
+## 已完成工作：
+- [ ] 格式转化处理器：
+    - [ ] INP加载处理器：
+        - [x] 节点数据-API
+        - [x] 单元数据-API
+        - [ ] 材料数据-API
+        - [ ] 截面数据-API
+        - [ ] 集合数据-API
+- [ ] 预处理器：
+    - [x] 节点实例化-API
+    - [x] 单元实例化-API
+    - [ ] 材料实例化-API
+    - [ ] 截面实例化-API
+    - [ ] 集合实例化-API
+- [ ] 求解器：
+    - [ ] 矩阵求解：
+        - [ ] B矩阵
+- [ ] 对象：
+    - [x] 节点:
+    - [ ] 单元:
+        - [ ] S3
+            - [x] 应变计算
+            - [ ] 应力计算
+        - [ ] S4
+    - [ ] 材料：
+    - [ ] 截面属性：
+    - [ ] 场：
+        - [x] 位移场
+        - [x] 应变场
+        - [ ] 应力场
 
 ## 未来工作
 - v0.1 : 开发版本
@@ -70,5 +105,7 @@ python main.py source.inp target.inp \
     - 控制参数：面向应用场景，提供控制参数（如残差控制、容差控制等）；
     - 更多输入：丰富格式转换接口，支持更多类型的输入；
     - 更多输出：如计算应变能密度分布等；
+
+## 参考资料
 
 [English]: ../README.md

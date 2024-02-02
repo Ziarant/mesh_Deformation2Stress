@@ -10,8 +10,10 @@ class S3(BaseElement):
     '''
     def __init__(self, label:int, sect, nodes:list):
         super().__init__(label, sect, nodes)
-        self._gauss = GAUSS_S3
-        self._type = 'S3'
+        self.setGauss(GAUSS_S3)
+        self.setType('S3')
+        self.setOrder(1)
+        self._shapeFunction = None
         
     def updateFreedomSignature(self):
         '''
@@ -22,46 +24,47 @@ class S3(BaseElement):
                 node.NFS[0] = 1
             if node.NFS[1] == 0:
                 node.NFS[1] = 1
-                
-    def calculate_B_Matrix(self):
-        '''
-        Calculate the B-matrix (3, 6) given specific node coordinates.
-        '''
-        A = (self.nodes[1].coord[0] *self.nodes[2].coord[1] - \
-			 self.nodes[2].coord[0] *self.nodes[1].coord[1] + \
-			 self.nodes[2].coord[0] *self.nodes[0].coord[1] - \
-			 self.nodes[0].coord[0] *self.nodes[2].coord[1] + \
-			 self.nodes[0].coord[0] *self.nodes[1].coord[1] - \
-			 self.nodes[1].coord[0] *self.nodes[0].coord[1])*0.5
-        
-        tempVal = 0.5 / A
-        
-        B = np.array([[self.nodes[1].coord[1] -self.nodes[2].coord[1] ,0.0,
-					   self.nodes[2].coord[1] -self.nodes[0].coord[1] ,0.0,
-					   self.nodes[0].coord[1] -self.nodes[1].coord[1] ,0.0],
-					  [0.0,self.nodes[2].coord[0] -self.nodes[1].coord[0] ,
-					   0.0,self.nodes[0].coord[0] -self.nodes[2].coord[0] ,
-					   0.0,self.nodes[1].coord[0] -self.nodes[0].coord[0] ],
-					  [self.nodes[2].coord[0] -self.nodes[1].coord[0] ,
-					   self.nodes[1].coord[1] -self.nodes[2].coord[1] ,
-					   self.nodes[0].coord[0] -self.nodes[2].coord[0] ,
-					   self.nodes[2].coord[1] -self.nodes[0].coord[1] ,
-					   self.nodes[1].coord[0] -self.nodes[0].coord[0] ,
-					   self.nodes[0].coord[1] -self.nodes[1].coord[1] ]])*tempVal
-
-        return B
-    
-    def getNodesDisplacement(self):
-        '''
-        Calculate the displacement vector (6, ) of the integral point.
-        '''
-        # TEST
-        U = np.array([1, 2, 3, 0, 0, 0])
-        return U.T
       
-    def calculate_Strain(self):
-        B = self.calculate_B_Matrix()
-        U = self.getNodesDisplacement()
-        strain_tensor = np.dot(B, U)
-        self._solutions['E'] = strain_tensor
-        print(strain_tensor)
+    def calculate_Strain_Nodal(self):
+        '''
+        Calculate the strain tensor on nodes.
+        '''
+        self.calculate_B_Matrix()
+        for node in self.nodes:
+            U = node.getSolution('U')
+            strain_tensor = np.dot(self.B_Matrix, U)
+            node.setSolution('E_Tensor_Nodal', {str(self.label) : strain_tensor})
+            self.setSolution('E_Tensor_Nodal', {str(node.label) : strain_tensor})
+            
+    def calculate_Strain(self,
+                         averageMethod:str = 'Advanced',
+                         averageVariation:float = 75,
+                         useCornerData:bool = True):
+        '''
+        Calculated Strain tensor of element based on the 'E_Tensor_Nodal'.
+        ## input
+        - ### averageMethod:
+            - 'None':
+            - 'Advanced':
+            - 'Simple':
+        ### averageVariation:
+        ### useCornerData:
+        '''
+        if not self.check_nodes_has_U_Data():
+            return
+        self.calculate_Strain_Nodal()
+        strain_tensor = np.zeros((3, 6))
+        for i in range(3):
+            node = self.nodes[i]
+            E_Tensor_Nodal = node.getSolution('E_Tensor_Nodal')
+            strain_tensor[i] = E_Tensor_Nodal[str(self.label)]
+            
+        E_Tensor = strain_tensor.mean(axis=0)
+        E_11, E_22, E_33, E_12, E_13, E_23 = E_Tensor[0], E_Tensor[1], E_Tensor[2], E_Tensor[3], E_Tensor[4], E_Tensor[5]
+        self.setSolution('E_Tensor', E_Tensor)
+        self.setSolution('E', {'E_11' : E_11,
+                               'E_22' : E_22,
+                               'E_33' : E_33,
+                               'E_12' : E_12,
+                               'E_13' : E_13,
+                               'E_23' : E_23})

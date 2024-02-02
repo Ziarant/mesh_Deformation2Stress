@@ -1,7 +1,7 @@
 import sys
 from conversion.loadInp import LoadInp
 from _parser.parser import Parser
-from solver import *
+from solver import UField, EField, SField
 
 _sourceFile = sys.argv[1]
 _targetFile = sys.argv[2]
@@ -11,7 +11,14 @@ if __name__ == "__main__":
     targetLoader = LoadInp(_targetFile)
     
     sourceParser = Parser(sourceLoader)
-    targetParser = Parser(targetLoader)
+    targetParser = Parser(targetLoader, isSource = False)
     
-    UField(sourceParser, targetParser)
-    EField(sourceParser, targetParser)
+    uField = UField(sourceParser, targetParser)
+    eField = EField(sourceParser)
+    sField = SField(sourceParser)
+    
+    # uField.print()
+    eField.print()
+    
+# Test:
+# python main.py test\source.inp test\target.inp

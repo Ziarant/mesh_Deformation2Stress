@@ -26,11 +26,15 @@ def getElementType(line:str):
 class LoadInp(BaseLoader):
     def __init__(self, path):
         super().__init__(path)
+        self._path = path
         self._context = self.load()
         self.parseInp()
         
     def parseInp(self):
         node_start_line = 0
+        element_start_line = 0
+        material_start_line = 0
+        property_start_line = 0
         for idx, line in enumerate(self._context):
             if check_line_start(r'\*Node', line):
                 node_start_line = idx + 1
@@ -40,11 +44,17 @@ class LoadInp(BaseLoader):
                 element_start_line = idx + 1
                 elemType, elemSet = getElementType(line)
                 self.parseElements(element_start_line, elemType, elemSet)
+                
+            if check_line_start(r'\*Material', line):
+                material_start_line = idx
+                self.parseMaterials(material_start_line)
             
         if node_start_line == 0:
-            raise ValueError('No node line found')
+            raise ValueError('No node line found in %s'%self.path)
         if element_start_line == 0: 
-            raise ValueError('No element line found')
+            raise ValueError('No element line found in %s'%self.path)
+        if material_start_line == 0:
+            print('Warning: No material line found in %s'%self.path)
     
     def parseNodes(self, node_start_line:int):
         for line in self._context[node_start_line:]:
@@ -82,3 +92,20 @@ class LoadInp(BaseLoader):
                 nodeLabel = int(elem_info[i + 1].strip())
                 data.append(nodeLabel)
             self._elements[elemType][elemSet].append(data)
+            
+    def parseMaterials(self, material_start_line:int):
+        mat_start_line = self._context[material_start_line]
+        matStartLine = mat_start_line.split('=')
+        matName = matStartLine[1].strip()
+        
+        mat_type_line = self._context[material_start_line + 1]
+        matTypeLine = mat_type_line.split('=')
+        matType = matTypeLine[1].strip()
+        
+        mat_data_line = self._context[material_start_line + 2]
+        matdata = mat_data_line.split(',')
+        self._materials[matName] = [matType, matdata]
+            
+    @property
+    def path(self):
+        return self._path

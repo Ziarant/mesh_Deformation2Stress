@@ -7,19 +7,24 @@ from objects.nodes import Node
 from objects.baseElement import ELEMENTTYPELIST, BaseElement
 from objects.elements import *
 
-class Parser():
-    def __init__(self, loader:BaseLoader):
+class Parser(object):
+    '''
+    Parse data.
+    If not the source data, could set `isSource = False` to reduce computation complexity.
+    '''
+    def __init__(self, loader:BaseLoader, isSource:bool = True):
         self._loader = loader
         
         self._nodesMap:map = None
         self._elementsMap:map = None
         self._nodesDict:dict = {}
         
-        self.instantiate()
+        self.instantiate(isSource)
         
-    def instantiate(self):
+    def instantiate(self, isSource:bool = True):
         self.instantiateNodes()
-        self.instantiateElements()
+        if isSource:
+            self.instantiateElements()
         
     def instantiateNodes(self):
         isinstiateNode = lambda x : Node(x[0], x[1], x[2], x[3])
@@ -39,12 +44,12 @@ class Parser():
     def instiateElement(self, elementInfo) -> BaseElement:
         elemType = elementInfo[0]
         label = elementInfo[1]
-        sect = elementInfo[2]
+        elemSet = elementInfo[2]
         nodesIndexList:list = elementInfo[3]
         nodes:list = []
         for label in nodesIndexList:
             nodes.append(self._nodesDict[str(label)])
-        return globals()[elemType](label, sect, nodes)
+        return globals()[elemType](label, elemSet, nodes)
         
     def instantiateElements(self):
         elementsDict = self._loader.elements
@@ -52,12 +57,12 @@ class Parser():
         for elemType in elementsDict.keys():
             if elemType not in ELEMENTTYPELIST:
                 continue
-            for sect in elementsDict[elemType].keys():
-                elementInfos:list = elementsDict[elemType][sect]
+            for elemSet in elementsDict[elemType].keys():
+                elementInfos:list = elementsDict[elemType][elemSet]
                 for elementInfo in elementInfos:
                     label = elementInfo[0]
                     nodes = elementInfo[1:]
-                    elements.append([elemType, label, sect, nodes])
+                    elements.append([elemType, label, elemSet, nodes])
                 
         self._elementsMap:map = map(self.instiateElement, elements)
         self._elementsList:list = list(self._elementsMap)

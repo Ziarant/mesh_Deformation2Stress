@@ -52,10 +52,26 @@ class UField(BaseField):
             x = targetNode.x - sourceNode.x
             y = targetNode.y - sourceNode.y
             z = targetNode.z - sourceNode.z
+            
+            magnitude = np.sqrt(x**2 + y**2 + z**2)
 
             sourceNode.setSolution('U', (x, y, z))
+            sourceNode.setSolution('U_MAGNITUDE', magnitude)
             count += 1
             
         print('The U-field calculation is complete, Total amount of node data written:[%d/%d]'%(count, numSourceNodes))
-            
+       
+    def print(self):
+        '''
+        Print the U-field data to TERMINAL.
+        '''
+        for sourceNode in self._sourceNodes:
+            # sourceNode.print('U')
+            # sourceNode.print('U_MAGNITUDE')
+            if 'U' not in sourceNode.solutions.keys():
+                continue
+            U = sourceNode.getSolution('U')
+            U_MAGNITUDE = sourceNode.getSolution('U_MAGNITUDE')
+            output = 'Node label:{} \t U:\t{:.3f},{:.3f},{:.3f} \t Magnitude:\t{:.3f}'.format(sourceNode.label, *U, U_MAGNITUDE)
+            print(output)   
             
