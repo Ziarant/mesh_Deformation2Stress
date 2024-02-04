@@ -1,5 +1,6 @@
 import sys, typing
 import numpy as np
+from abc import ABC, abstractmethod
 
 from .matrix.bMatrix import BMatrix
 from .baseSet import BaseSet
@@ -7,6 +8,7 @@ from .baseSection import BaseSection
 
 ELEMENTTYPELIST = ['S3', 'S4', 'S4R']
 
+# Guss Qadrature : list[N, N]
 GAUSS_S3 = [[0.666666667, 0.166666667, 0.166666667],
 			[0.166666667, 0.666666667, 0.166666667],
 			[0.166666667, 0.166666667, 0.666666667]]
@@ -16,19 +18,22 @@ GAUSS_S4 = [[0.585410196624968, 0.138196601125011, 0.138196601125011, 0.13819660
 			[0.138196601125011, 0.138196601125011, 0.585410196624968, 0.138196601125011],
 			[0.138196601125011, 0.138196601125011, 0.138196601125011, 0.585410196624968]]
 
-class BaseElement(object):
+class BaseElement(ABC):
 	'''
-	Base class for elements.
+	Abstract Base Class for elements.
 	'''
 
 	_nextId = 1
-	def __init__(self, label:int, elemSet: BaseSet, nodes:list):
+ 
+	@abstractmethod
+	def __init__(self):
 		self._id = BaseElement._nextId
 		BaseElement._nextId += 1
-
-		self._label = label
-		self._elemSet = elemSet
-		self._nodes = nodes
+  
+		self._label:str = ''
+		self._component:BaseSet = None
+		self._section:BaseSection = None
+		self._nodes:list = []
   
 		self._type:str = ''
 		self._order:int = 1
@@ -41,7 +46,10 @@ class BaseElement(object):
 	def setType(self, elemType:str):
 		self._type = elemType
   
-	def setSect(self, sect):
+	def setComponent(self, comp:BaseSet):
+		self._component = comp
+  
+	def setSection(self, sect:BaseSection):
 		self._section = sect
   
 	def setOrder(self, order:int):
@@ -97,6 +105,10 @@ class BaseElement(object):
 	def updateFreedomSignature(self):
 		pass
 
+	def updateNodes(self):
+		for node in self.nodes:
+			node.appendElement(self)
+
 	def calculate_B_Matrix(self):
 		'''
         Calculate the B-Matrix (6, 3) given specific node coordinates.
@@ -105,13 +117,61 @@ class BaseElement(object):
 		self._B_Matrix.calculate()
 
 	def calculate_Strain_Nodal(self):
-		pass
+		self.calculate_B_Matrix()
+		for node in self.nodes:
+			U = node.getSolution('U')
+			strain_tensor = np.dot(self.B_Matrix, U)
+			node.setSolution('E_Tensor_Nodal', {str(self.label) : strain_tensor})
+			self.setSolution('E_Tensor_Nodal', {str(node.label) : strain_tensor})
   
-	def calculate_Strain(self):
-		pass
+	def calculate_Strain(self,
+                         averageMethod:str = 'Advanced',
+                         averageVariation:float = 75,
+                         useCornerData:bool = True):
+		'''
+		Calculated Strain tensor of element based on the 'E_Tensor_Nodal'.
+		## input
+		- ### averageMethod:
+            - 'None':
+            - 'Advanced':
+            - 'Simple':
+        ### averageVariation:
+        ### useCornerData:
+        '''
+		if not self.check_nodes_has_U_Data():
+			return
+		self.calculate_Strain_Nodal()
+		strain_tensor = np.zeros((3, 6))
+		for i in range(3):
+			node = self.nodes[i]
+			E_Tensor_Nodal = node.getSolution('E_Tensor_Nodal')
+			strain_tensor[i] = E_Tensor_Nodal[str(self.label)]
+            
+		E_Tensor = strain_tensor.mean(axis=0)
+		E_11, E_22, E_33, E_12, E_13, E_23 = E_Tensor[0], E_Tensor[1], E_Tensor[2], E_Tensor[3], E_Tensor[4], E_Tensor[5]
+		self.setSolution('E_Tensor', E_Tensor)
+		self.setSolution('E', {'E_11' : E_11,
+                               'E_22' : E_22,
+                               'E_33' : E_33,
+                               'E_12' : E_12,
+                               'E_13' : E_13,
+                               'E_23' : E_23})
 
 	def calculate_Stress(self):
-		pass
+		E_Tensor = self.getSolution('E_Tensor')
+		material = self.material
+		elasticTensor = material.elasticTensor
+		S_Tensor = np.dot(E_Tensor, elasticTensor)
+		S_11, S_22, S_33, S_12, S_13, S_23 = S_Tensor[0], S_Tensor[1], S_Tensor[2], S_Tensor[3], S_Tensor[4], S_Tensor[5]
+		self.setSolution('S_Tensor', S_Tensor)
+		self.setSolution('S', {'S_11' : S_11,
+                               'S_22' : S_22,
+                               'S_33' : S_33,
+                               'S_12' : S_12,
+                               'S_13' : S_13,
+                               'S_23' : S_23})
+		for node in self.nodes:
+			node.setSolution('S_Tensor', {str(self.label) : S_Tensor})
 
 	@property
 	def id(self):
@@ -122,8 +182,12 @@ class BaseElement(object):
 		return self._label
 
 	@property
+	def component(self):
+		return self._component
+
+	@property
 	def section(self):
-		return self._section
+		return self._component.section
 
 	@property
 	def nodes(self):
@@ -132,6 +196,10 @@ class BaseElement(object):
 	@property
 	def solutions(self):
 		return self._solutions
+
+	@property
+	def material(self):
+		return self._component.material
 
 	@property
 	def B_Matrix(self):

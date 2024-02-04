@@ -36,7 +36,7 @@ class EField(BaseField):
         for element in self._sourceElements:
             if 'E_Tensor' in element.solutions.keys():
                 E = element.getSolution('E_Tensor')
-                output = 'Elem label:{} \t E:\t{:.3f},{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}'.format(element.label, *E)
+                output = 'Elem label:{} \t E_Tensor:\t{:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}'.format(element.label, *E)
                 print(output)
                 count += 1
                 

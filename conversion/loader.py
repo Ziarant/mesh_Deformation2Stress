@@ -5,6 +5,7 @@ class BaseLoader(object):
         self._path:str = path
         self._nodes:list = []
         self._elements:dict = {}
+        self._sections:dict = {}
         self._properties:dict = {}
         self._materials:dict = {}       
 
@@ -21,6 +22,10 @@ class BaseLoader(object):
         return self._elements
     
     @property
+    def sections(self) -> dict:
+        return self._sections
+    
+    @property
     def properties(self) -> dict:
         return self._properties
     
@@ -29,8 +34,7 @@ class BaseLoader(object):
         return self._materials
         
         
-# 输出形式：
-# Node: list[N] = [label, x, y, z]
-# Element: dict[TYPE][ELSET] = [label, n1, n2, …]
-# Property:dict[NAME] = [ELSET, MATERIAL, DATA]
-# Material:dict[NAME] = [TYPE, DATA]
+# loader.nodes: list[N] = [label, x, y, z]
+# loader.element: dict[TYPE][ELSET] = [label, n1, n2, …]
+# loader.properties:dict[NAME] = [ELSET, MATERIAL, DATA]
+# loader.materials:dict[NAME] = [TYPE, DATA]

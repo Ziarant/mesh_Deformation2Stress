@@ -48,6 +48,10 @@ class LoadInp(BaseLoader):
             if check_line_start(r'\*Material', line):
                 material_start_line = idx
                 self.parseMaterials(material_start_line)
+                
+            if check_line_start(r'\*SHELL SECTION', line):
+                shell_section_start_line = idx
+                self.parseShellSection(shell_section_start_line)
             
         if node_start_line == 0:
             raise ValueError('No node line found in %s'%self.path)
@@ -103,9 +107,34 @@ class LoadInp(BaseLoader):
         matType = matTypeLine[1].strip()
         
         mat_data_line = self._context[material_start_line + 2]
-        matdata = mat_data_line.split(',')
+        matdata = []
+        for data in mat_data_line.split(','):
+            matdata.append(float(data.strip()))
         self._materials[matName] = [matType, matdata]
+        
+    def parseShellSection(self, shell_section_start_line:int):
+        section_start_line = self._context[shell_section_start_line]
+        sectionStartLine = section_start_line.split(',')
+        elsetNameLine = sectionStartLine[1].strip()
+        elsetName = elsetNameLine.split('=')[1].strip()
+        
+        matNameLine = sectionStartLine[2].strip()
+        matName = matNameLine.split('=')[1].strip()
+        
+        section_data_line = self._context[shell_section_start_line + 1]
+        sectionData = []
+        for data in section_data_line.split(','):
+            data = data.strip()
+            if len(data) == 0:
+                continue
+            sectionData.append(float(data))
+        self._sections[elsetName] = ['SHELLSECTION', elsetName, matName, sectionData]
             
     @property
     def path(self):
         return self._path
+    
+# loader.nodes: list[N] = [label, x, y, z]
+# loader.element: dict[TYPE][ELSET] = [label, n1, n2, …]
+# loader.properties:dict[NAME] = [TYPE, ELSET, MATERIAL, DATA]
+# loader.materials:dict[NAME] = [TYPE, DATA]

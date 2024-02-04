@@ -14,6 +14,7 @@ class Node(object):
         self._coord = [self.x, self.y, self.z]
         self._NFS = [0,0,0,0,0,0]
         self._solutions = {}
+        self._elements = {}
         
     def translate(self, x:float, y:float, z:float=0.0):
         self._x += x
@@ -25,6 +26,9 @@ class Node(object):
         self._y = y
         self._z = z
         return self.coord
+    
+    def appendElement(self, element):
+        self._elements[element.id] = element
     
     def getSolution(self, key:str):
         if key in self._solutions:
@@ -74,6 +78,10 @@ class Node(object):
     @property
     def coord(self) -> list:
         return self._coord
+    
+    @property
+    def elements(self) -> dict:
+        return self._elements
     
     @property
     def NFS(self) -> list:
