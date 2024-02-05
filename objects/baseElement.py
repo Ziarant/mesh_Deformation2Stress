@@ -35,9 +35,12 @@ class BaseElement(ABC):
 		self._section:BaseSection = None
 		self._nodes:list = []
   
+		self._integralPoint:list = []
+  
 		self._type:str = ''
 		self._order:int = 1
 		self._gauss:list = None
+		self._gaussWidget:float = 1.0
 		self._B_Matrix = BMatrix(self)
 		self._solutions = {}
   
@@ -52,11 +55,19 @@ class BaseElement(ABC):
 	def setSection(self, sect:BaseSection):
 		self._section = sect
   
+	def setNodes(self, nodes:list):
+		self._nodes = nodes
+		self.updateNodes()
+		self.calIntegralPoint()
+  
 	def setOrder(self, order:int):
 		self._order = order
   
 	def setGauss(self, gauss:list):
 		self._gauss = gauss
+  
+	def setGaussWidget(self, gaussWidget:float):
+		self._gaussWidget = gaussWidget
   
 	def check_nodes_has_U_Data(self) -> bool:
 		'''
@@ -108,6 +119,25 @@ class BaseElement(ABC):
 	def updateNodes(self):
 		for node in self.nodes:
 			node.appendElement(self)
+		self.calIntegralPoint()
+
+	def calIntegralPoint(self):
+		'''
+		Calculate the integral point of element.
+		'''
+		coordMatrix = []
+		for node in self.nodes:
+			coordMatrix.append(node.coord)
+   
+		if self.gauss is None:
+			return
+
+		gaussM = np.array(self.gauss)
+		coordM = np.array(coordMatrix)
+
+		pointM = np.dot(gaussM, coordM)
+		_integralPoint = np.sum(pointM, axis=0) * self.gaussWidget
+		self._integralPoint = [_integralPoint[0], _integralPoint[1], _integralPoint[2]]
 
 	def calculate_B_Matrix(self):
 		'''
@@ -146,7 +176,9 @@ class BaseElement(ABC):
 			node = self.nodes[i]
 			E_Tensor_Nodal = node.getSolution('E_Tensor_Nodal')
 			strain_tensor[i] = E_Tensor_Nodal[str(self.label)]
-            
+         
+        # Warning: Element Strain is not simple average of Nodal Strain.
+        # The element strain should be calculated by the displacement of the integral point.
 		E_Tensor = strain_tensor.mean(axis=0)
 		E_11, E_22, E_33, E_12, E_13, E_23 = E_Tensor[0], E_Tensor[1], E_Tensor[2], E_Tensor[3], E_Tensor[4], E_Tensor[5]
 		self.setSolution('E_Tensor', E_Tensor)
@@ -194,8 +226,20 @@ class BaseElement(ABC):
 		return self._nodes
 
 	@property
+	def integralPoint(self):
+		return self._integralPoint
+
+	@property
 	def solutions(self):
 		return self._solutions
+
+	@property
+	def gauss(self) -> list:
+		return self._gauss
+
+	@property
+	def gaussWidget(self) -> float:
+		return self._gaussWidget
 
 	@property
 	def material(self):

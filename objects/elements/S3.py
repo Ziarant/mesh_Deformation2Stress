@@ -12,17 +12,16 @@ class CPS3(BaseElement):
     '''
     def __init__(self, label:int, elSet:str, nodes:list):
         super().__init__()
-        
-        self._label = label
-        component = Component(elSet)
-        self.setComponent(component)
-        self._nodes = nodes
-        self.updateNodes()
-        
         self.setGauss(GAUSS_S3)
         self.setType('CPS3')
         self.setOrder(1)
         
+        self._label = label
+        component = Component(elSet)
+        self.setComponent(component)
+        self.setNodes(nodes)
+        
+
 class S3(BaseElement):
     '''
     Class for triangular 3-node 3D element(constant strain triangle element).
@@ -30,15 +29,12 @@ class S3(BaseElement):
     '''
     def __init__(self, label:int, elSet:str, nodes:list):
         super().__init__()
+        self.setGauss(GAUSS_S3)
+        self.setGaussWidget(1.0 / 3)
+        self.setType('S3')
+        self.setOrder(1)
         
         self._label = label
         component = Component(elSet)
         self.setComponent(component)
-        self._nodes = nodes
-        self.updateNodes()
-        
-        self.setGauss(GAUSS_S3)
-        self.setType('S3')
-        self.setOrder(1)
-        
-        
+        self.setNodes(nodes)

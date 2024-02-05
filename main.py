@@ -17,7 +17,7 @@ if __name__ == "__main__":
     eField = EField(sourceParser)
     sField = SField(sourceParser)
     
-    sField.print()
+    eField.print()
     
 # Test:
 # python main.py test\source.inp test\target.inp
