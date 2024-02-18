@@ -34,11 +34,15 @@ class EField(BaseField):
         '''
         count = 0
         for element in self._sourceElements:
-            if 'E_Tensor' in element.solutions.keys():
-                E = element.getSolution('E_Tensor')
-                output = 'Elem label:{} \t E_Tensor:\t{:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}'.format(element.label, *E)
-                print(output)
-                count += 1
+            # if 'E_Tensor' in element.solutions.keys():
+            #     E = element.getSolution('E_Tensor')
+            #     output = 'Elem label:{} \t E_Tensor:\t{:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}, {:.3e}'.format(element.label, *E)
+            #     print(output)
+            #     count += 1
+            
+            # TEST:测试输出——形函数
+            f = element.S_Matrix
+            print(f)
                 
         if count == 0:
             print('Warning: No E_Tensor data found.')

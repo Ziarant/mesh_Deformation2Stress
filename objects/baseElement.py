@@ -2,6 +2,8 @@ import sys, typing
 import numpy as np
 from abc import ABC, abstractmethod
 
+from .matrix.sMatrix import SMatrix
+from .matrix.jMatrix import JMatrix
 from .matrix.bMatrix import BMatrix
 from .baseSet import BaseSet
 from .baseSection import BaseSection
@@ -41,6 +43,9 @@ class BaseElement(ABC):
 		self._order:int = 1
 		self._gauss:list = None
 		self._gaussWidget:float = 1.0
+		self._gaussPoint:list = []
+		self._S_Matrix = SMatrix(self)
+		self._J_Matrix = JMatrix(self)
 		self._B_Matrix = BMatrix(self)
 		self._solutions = {}
   
@@ -103,6 +108,9 @@ class BaseElement(ABC):
 		if key in self._solutions:
 			return self._solutions[key]
 
+	def setGaussPoint(self, gaussPoint:list):
+		self._gaussPoint = gaussPoint
+
 	def outputSolution(self, key:str, key2:str = None):
 		solution = self.getSolution(key)
 		if type(solution).__name__ == 'dict':
@@ -144,6 +152,8 @@ class BaseElement(ABC):
         Calculate the B-Matrix (6, 3) given specific node coordinates.
         B-Matrix:Describe the relationship between displacement and strain
         '''
+		self._S_Matrix.calculate()
+		self._J_Matrix.calculate()
 		self._B_Matrix.calculate()
 
 	def calculate_Strain_Nodal(self):
@@ -171,7 +181,8 @@ class BaseElement(ABC):
 		if not self.check_nodes_has_U_Data():
 			return
 		self.calculate_Strain_Nodal()
-		strain_tensor = np.zeros((3, 6))
+		N = len(self.nodes)
+		strain_tensor = np.zeros((N, 6))
 		for i in range(3):
 			node = self.nodes[i]
 			E_Tensor_Nodal = node.getSolution('E_Tensor_Nodal')
@@ -179,7 +190,9 @@ class BaseElement(ABC):
          
         # Warning: Element Strain is not simple average of Nodal Strain.
         # The element strain should be calculated by the displacement of the integral point.
-		E_Tensor = strain_tensor.mean(axis=0)
+        # The displacement of the integral point should be calculated by each node and shape function
+		E_T = np.dot(self.gauss, strain_tensor)
+		E_Tensor = np.sum(E_T, axis = 0)
 		E_11, E_22, E_33, E_12, E_13, E_23 = E_Tensor[0], E_Tensor[1], E_Tensor[2], E_Tensor[3], E_Tensor[4], E_Tensor[5]
 		self.setSolution('E_Tensor', E_Tensor)
 		self.setSolution('E', {'E_11' : E_11,
@@ -242,8 +255,20 @@ class BaseElement(ABC):
 		return self._gaussWidget
 
 	@property
+	def gaussPoint(self) -> list:
+		return self._gaussPoint
+
+	@property
 	def material(self):
 		return self._component.material
+
+	@property
+	def S_Matrix(self):
+		return self._S_Matrix.matrix
+
+	@property
+	def J_Matrix(self):
+		return self._J_Matrix.matrix
 
 	@property
 	def B_Matrix(self):

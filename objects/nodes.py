@@ -1,3 +1,5 @@
+import numpy as np
+
 class Node(object):
     '''
     Base class for nodes.
@@ -15,6 +17,9 @@ class Node(object):
         self._NFS = [0,0,0,0,0,0]
         self._solutions = {}
         self._elements = {}
+        
+        # Properties
+        self._isOnSurface = False
         
     def translate(self, x:float, y:float, z:float=0.0):
         self._x += x
@@ -77,7 +82,7 @@ class Node(object):
     
     @property
     def coord(self) -> list:
-        return self._coord
+        return np.array(self._coord)
     
     @property
     def elements(self) -> dict:
@@ -90,3 +95,10 @@ class Node(object):
     @property
     def solutions(self) -> dict:
         return self._solutions
+    
+    @property
+    def isOnSurface(self) -> bool:
+        '''
+        Surface Node: True or False
+        '''
+        return self._isOnSurface
