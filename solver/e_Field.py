@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import sympy
 
 sys.path.append('..')
 
@@ -41,8 +42,16 @@ class EField(BaseField):
             #     count += 1
             
             # TEST:测试输出——形函数
-            f = element.S_Matrix
-            print(f)
+            F = element.S_Matrix
+            v = F[0]
+            if type(v).__name__ == 'Mul':
+                # 局部坐标求解：
+                xi, eta, zeta = sympy.symbols('xi, eta, zeta')
+                S = []
+                for f in F:
+                    solve = f.subs({xi:0, eta:0, zeta:0})
+                    S.append(solve)
+                print(S)
                 
         if count == 0:
             print('Warning: No E_Tensor data found.')

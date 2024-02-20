@@ -15,11 +15,14 @@ class CPS3(BaseElement):
         self.setGauss(GAUSS_S3)
         self.setType('CPS3')
         self.setOrder(1)
+        self.set3D(False)
         
         self._label = label
         component = Component(elSet)
         self.setComponent(component)
         self.setNodes(nodes)
+        
+        self.setGaussPoints(self.gauss)
         
 
 class S3(BaseElement):
@@ -30,11 +33,14 @@ class S3(BaseElement):
     def __init__(self, label:int, elSet:str, nodes:list):
         super().__init__()
         self.setGauss(GAUSS_S3)
-        self.setGaussWidget(1.0 / 3)
+        self.setGaussWidget(1.0 / 2)
         self.setType('S3')
         self.setOrder(1)
+        self.set3D(False)
         
         self._label = label
         component = Component(elSet)
         self.setComponent(component)
         self.setNodes(nodes)
+
+        self.setGaussPoints(self.gauss)

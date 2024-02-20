@@ -1,5 +1,6 @@
 # 等参单元形函数
 '''
+    # 局部坐标系下的形函数：
     1-D:
         2节点杆单元：C3D2
             N1 = 1 - x/L
@@ -38,48 +39,43 @@ def calculate_Rod2(element):
     dN2 = [1/L, 0, 0]
     return [N1, N2], [dN1, dN2]
 
-def calculate_Rod3(element):
+def calculate_Rod3():
     # TODO: 实现计算3节点杆单元的S矩阵
     pass
 
-def calculate_Tri3(element):
-    nodes = element.nodes
-    L1 = nodes[1].coord - nodes[0].coord
-    L2 = nodes[2].coord - nodes[1].coord
-    L3 = nodes[0].coord - nodes[2].coord
-    L1 = np.linalg.norm(L1)
-    L2 = np.linalg.norm(L2)
-    L3 = np.linalg.norm(L3)
-    N1 = L1
-    N2 = 1- L1 - L2
-    N3 = L2
-    dN1 = [0, 0, 0]
-    dN2 = [0, 0, 0]
-    dN3 = [0, 0, 0]
+def calculate_Tri3():
+    xi, eta, zeta = sympy.Symbol("xi"), sympy.Symbol("eta"), sympy.Symbol("zeta")
+    N1 = xi
+    N2 = eta
+    N3 = zeta
+    # 形函数对局部坐标的偏导
+    dN1 = [1, 0, 0]
+    dN2 = [0, 1, 0]
+    dN3 = [0, 0, 1]
     return [N1, N2, N3], [dN1, dN2, dN3]
 
-def calculate_Tri6(element):
+def calculate_Tri6():
     # TODO: 实现计算6节点三角形单元的S矩阵
     pass
 
-def calculate_Tri10(element):
+def calculate_Tri10():
     # TODO: 实现计算10节点三角形单元的S矩阵
     pass
 
-def calculate_Tri15(element):
+def calculate_Tri15():
     # TODO: 实现计算15节点三角形单元的S矩阵
     pass
 
-def calculate_Quad4(element):
-    x, y = sympy.Symbol("x"), sympy.Symbol("y")
-    N1 = 0.25 * (1 - x) * (1 - y)
-    N2 = 0.25 * (1 - x) * (1 + y)
-    N3 = 0.25 * (1 + x) * (1 + y)
-    N4 = 0.25 * (1 + x) * (1 - y)
-    dN1 = [0.25 * (1 - y), 0.25 * (1 - x), 0]
-    dN2 = [0.25 * (1 + y), 0.25 * (1 - x), 0]
-    dN3 = [0.25 * (1 + y), 0.25 * (1 + x), 0]
-    dN4 = [0.25 * (1 - y), 0.25 * (1 + x), 0]
+def calculate_Quad4():
+    xi, eta = sympy.Symbol("xi"), sympy.Symbol("eta")
+    N1 = 0.25 * (1 - xi) * (1 - eta)
+    N2 = 0.25 * (1 + xi) * (1 - eta)
+    N3 = 0.25 * (1 + xi) * (1 + eta)
+    N4 = 0.25 * (1 - xi) * (1 + eta)
+    dN1 = [0.25 * (1 - eta), 0.25 * (1 - xi), 0]
+    dN2 = [0.25 * (1 - eta), 0.25 * (1 + xi), 0]
+    dN3 = [0.25 * (1 + eta), 0.25 * (1 + xi), 0]
+    dN4 = [0.25 * (1 + eta), 0.25 * (1 - xi), 0]
     return [N1, N2, N3, N4], [dN1, dN2, dN3, dN4]
 
 def calculate_Quad8(element):
@@ -101,9 +97,9 @@ class SMatrix(object):
         if elemType in ['C3T2']:
             self._matrix, self._NDiff = calculate_Rod2(self._element)
         elif elemType in ['CPS3', 'S3']:
-            self._matrix, self._NDiff = calculate_Tri3(self._element)
+            self._matrix, self._NDiff = calculate_Tri3()
         elif elemType in ['S4', 'S4R']:
-            self._matrix, self._NDiff = calculate_Quad4(self._element)    
+            self._matrix, self._NDiff = calculate_Quad4()    
             
     @property
     def matrix(self):

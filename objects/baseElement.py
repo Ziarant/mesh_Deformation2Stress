@@ -11,14 +11,12 @@ from .baseSection import BaseSection
 ELEMENTTYPELIST = ['S3', 'S4', 'S4R']
 
 # Guss Qadrature : list[N, N]
-GAUSS_S3 = [[0.666666667, 0.166666667, 0.166666667],
-			[0.166666667, 0.666666667, 0.166666667],
-			[0.166666667, 0.166666667, 0.666666667]]
+GAUSS_S3 = [[1.0/3, 1.0/3, 1.0/3]]
 
-GAUSS_S4 = [[0.585410196624968, 0.138196601125011, 0.138196601125011, 0.138196601125011],
-			[0.138196601125011, 0.585410196624968, 0.138196601125011, 0.138196601125011],
-			[0.138196601125011, 0.138196601125011, 0.585410196624968, 0.138196601125011],
-			[0.138196601125011, 0.138196601125011, 0.138196601125011, 0.585410196624968]]
+GAUSS_S4 = [[-np.sqrt(3)/3, -np.sqrt(3)/3],
+            [np.sqrt(3)/3, -np.sqrt(3)/3],
+            [np.sqrt(3)/3, np.sqrt(3)/3],
+            [-np.sqrt(3)/3, np.sqrt(3)/3]]
 
 class BaseElement(ABC):
 	'''
@@ -39,11 +37,13 @@ class BaseElement(ABC):
   
 		self._integralPoint:list = []
   
+		self._is3D:bool = True
+
 		self._type:str = ''
 		self._order:int = 1
 		self._gauss:list = None
 		self._gaussWidget:float = 1.0
-		self._gaussPoint:list = []
+		self._gaussPoints:list = []
 		self._S_Matrix = SMatrix(self)
 		self._J_Matrix = JMatrix(self)
 		self._B_Matrix = BMatrix(self)
@@ -53,6 +53,9 @@ class BaseElement(ABC):
   
 	def setType(self, elemType:str):
 		self._type = elemType
+  
+	def set3D(self, is3D:bool):
+		self._is3D = is3D
   
 	def setComponent(self, comp:BaseSet):
 		self._component = comp
@@ -108,8 +111,11 @@ class BaseElement(ABC):
 		if key in self._solutions:
 			return self._solutions[key]
 
-	def setGaussPoint(self, gaussPoint:list):
-		self._gaussPoint = gaussPoint
+	def setGaussPoints(self, gaussPoints:list):
+		'''
+		设置高斯积分点（局部坐标系），高斯积分点数目与单元类型和阶数有关。
+		'''
+		self._gaussPoints = gaussPoints
 
 	def outputSolution(self, key:str, key2:str = None):
 		solution = self.getSolution(key)
@@ -140,11 +146,12 @@ class BaseElement(ABC):
 		if self.gauss is None:
 			return
 
-		gaussM = np.array(self.gauss)
-		coordM = np.array(coordMatrix)
+		# gaussM = np.array(self.gauss)
+		# coordM = np.array(coordMatrix)
 
-		pointM = np.dot(gaussM, coordM)
-		_integralPoint = np.sum(pointM, axis=0) * self.gaussWidget
+		# pointM = np.dot(gaussM, coordM)
+		# _integralPoint = np.sum(pointM, axis=0) * self.gaussWidget
+		_integralPoint = [0, 0, 0]
 		self._integralPoint = [_integralPoint[0], _integralPoint[1], _integralPoint[2]]
 
 	def calculate_B_Matrix(self):
@@ -191,8 +198,8 @@ class BaseElement(ABC):
         # Warning: Element Strain is not simple average of Nodal Strain.
         # The element strain should be calculated by the displacement of the integral point.
         # The displacement of the integral point should be calculated by each node and shape function
-		E_T = np.dot(self.gauss, strain_tensor)
-		E_Tensor = np.sum(E_T, axis = 0)
+		# E_T = np.dot(self.gauss, strain_tensor)
+		E_Tensor = np.sum(strain_tensor, axis = 0)
 		E_11, E_22, E_33, E_12, E_13, E_23 = E_Tensor[0], E_Tensor[1], E_Tensor[2], E_Tensor[3], E_Tensor[4], E_Tensor[5]
 		self.setSolution('E_Tensor', E_Tensor)
 		self.setSolution('E', {'E_11' : E_11,
@@ -227,6 +234,10 @@ class BaseElement(ABC):
 		return self._label
 
 	@property
+	def is3D(self):
+		return self._is3D
+
+	@property
 	def component(self):
 		return self._component
 
@@ -255,8 +266,8 @@ class BaseElement(ABC):
 		return self._gaussWidget
 
 	@property
-	def gaussPoint(self) -> list:
-		return self._gaussPoint
+	def gaussPoints(self) -> list:
+		return self._gaussPoints
 
 	@property
 	def material(self):
@@ -265,6 +276,10 @@ class BaseElement(ABC):
 	@property
 	def S_Matrix(self):
 		return self._S_Matrix.matrix
+
+	@property
+	def NDiff(self):
+		return self._S_Matrix.NDiff
 
 	@property
 	def J_Matrix(self):
@@ -277,3 +292,7 @@ class BaseElement(ABC):
 	@property
 	def elemType(self):
 		return self._type
+
+	@property
+	def Jacobian(self):
+		return self._J_Matrix.jacobian
