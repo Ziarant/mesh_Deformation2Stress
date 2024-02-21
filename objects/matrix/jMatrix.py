@@ -23,16 +23,16 @@ def calculate_Jacobi(element):
     # TODO: 计算高斯积分点的雅可比矩阵
     n = len(F)
     nGaussPoint = len(element.gaussPoints)
-    gPnt = np.zeros((3, nGaussPoint))
+    gPnt = np.zeros((nGaussPoint, 3))
     # 根据形函数计算各高斯积分点的空间坐标：
     for idx_GP in range(nGaussPoint):
         xc = element.gaussPoints[idx_GP][0]
         yc = element.gaussPoints[idx_GP][1]
         zc = element.gaussPoints[idx_GP][2] if len(element.gaussPoints[idx_GP]) > 2 else 0
         
-        gPnt[0][idx_GP] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * xcoord[i] for i in range(n))    # x
-        gPnt[1][idx_GP] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * ycoord[i] for i in range(n))    # y
-        gPnt[2][idx_GP] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * zcoord[i] for i in range(n))    # z
+        gPnt[idx_GP][0] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * xcoord[i] for i in range(n))    # x
+        gPnt[idx_GP][1] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * ycoord[i] for i in range(n))    # y
+        gPnt[idx_GP][2] = sum(F[i].subs({xi:xc, eta:yc, zeta:zc}) * zcoord[i] for i in range(n))    # z
     
     # 根据形函数偏导计算高斯点处的雅可比矩阵
     NDiff = element.NDiff
@@ -41,25 +41,34 @@ def calculate_Jacobi(element):
         xc = element.gaussPoints[idx_GP][0]
         yc = element.gaussPoints[idx_GP][1]
         zc = element.gaussPoints[idx_GP][2] if len(element.gaussPoints[idx_GP]) > 2 else 0 
+        J[idx_GP, :, :] = np.ones((3, 3))
         for i in range(3):
             for j in range(3):
                 # 第idx_GP个高斯点的雅可比矩阵 dXj_dUi：
                 try:
-                    J[idx_GP, i, j] = sum(NDiff[k][i].subs({xi:xc, eta:yc, zeta:zc}) * gPnt[j][idx_GP] for k in range(n))
+                    J[idx_GP, i, j] = sum(NDiff[k][i].subs({xi:xc, eta:yc, zeta:zc}) * gPnt[idx_GP][j] for k in range(n))
                 except:
-                    J[idx_GP, i, j] = sum(NDiff[k][i] * gPnt[j][idx_GP] for k in range(n))
+                    J[idx_GP, i, j] = sum(NDiff[k][i] * gPnt[idx_GP][j] for k in range(n))
 
-    print(J[0])
+    # print(J[0])
     return np.array(J).astype(float)
 
-def calculate_Jacobian(element, J):
+def calculate_JacobianRatio(J):
     '''
-    计算雅可比值
+    计算雅可比率:
+    2范数对应体积变化率
     '''
-    return 0
-    
-def calculate_QUAD4(element):
-    Ndiff = element.NDiff
+    nJ = len(J)
+    normJ = np.zeros(nJ)
+    for i in range(nJ):
+        normJ[i] = np.linalg.norm(J[i])
+        
+    maxNorm = np.max(normJ)
+    meanNorm = np.mean(normJ)
+    minNorm = np.min(normJ)
+    if maxNorm == 0:
+        return 1.0
+    return minNorm / meanNorm
 
 class JMatrix(object):
     '''
@@ -73,11 +82,11 @@ class JMatrix(object):
 
     def calculate(self):
         self._matrix = calculate_Jacobi(self._element)
-        # 计算行列式：
-        if len(self._element.nodes) < 4:
+        # 计算雅可比率(高斯点)：
+        if len(self._matrix) == 1:
             self._jacobian = 1.0
         else:
-            self._jacobian = calculate_Jacobian(self._element, self._matrix)
+            self._jacobian = calculate_JacobianRatio(self._matrix)
         
     @property
     def matrix(self):
