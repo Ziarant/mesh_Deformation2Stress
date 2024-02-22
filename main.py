@@ -21,3 +21,6 @@ if __name__ == "__main__":
     
 # Test:
 # python main.py test\source.inp test\target.inp
+
+# GUI Test:
+# python main_GUI.py

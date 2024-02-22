@@ -18,11 +18,11 @@ def calculate_CPS3(element) -> np.ndarray:
                   [0.0,     x3 -x2, 0.0,    x1 -x3, 0.0,    x2 -x1 ],
                   [x3 -x2 , y2 -y3, x1 -x3, y3 -y1, x2 -x1, y1 -y2 ]]) *tempVal
 
-    # if not element.elemType == 'S3':
-    #     print(element.label)
-    #     for node in element.nodes:
-    #         print('\tNode:\t', node.label, '\t', node.coord)
-    #     print('\tJacobian:\t',element.Jacobian)
+    if element.elemType == 'S4R':
+        print(element.label)
+        for node in element.nodes:
+            print('\tNode:\t', node.label, '\t', node.coord)
+        print('\tJacobian:\t',element.Jacobian)
     return B.T
 
 def calculate_S3(element) -> np.ndarray:

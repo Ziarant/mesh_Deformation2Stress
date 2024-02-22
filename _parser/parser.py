@@ -57,8 +57,8 @@ class Parser(object):
         elemSet = elementInfo[2]
         nodesIndexList:list = elementInfo[3]
         nodes:list = []
-        for label in nodesIndexList:
-            nodes.append(self._nodesDict[str(label)])
+        for nodeLabel in nodesIndexList:
+            nodes.append(self._nodesDict[str(nodeLabel)])
         if elemType not in globals().keys():
             return None
         return globals()[elemType](label, elemSet, nodes)
