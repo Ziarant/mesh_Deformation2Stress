@@ -95,7 +95,7 @@ QTabBar::tab:!selected {
        </widget>
       </widget>
       <widget class="QWidget" name="gridLayoutWidget">
-       <layout class="QGridLayout" name="gridLayout_3">
+       <layout class="QGridLayout" name="_3DLayout">
         <item row="0" column="0">
          <widget class="QOpenGLWidget" name="openGLWidget">
           <property name="minimumSize">
@@ -129,14 +129,14 @@ QTabBar::tab:!selected {
      <property name="title">
       <string>Import</string>
      </property>
-     <addaction name="actioninp"/>
+     <addaction name="actionInp"/>
     </widget>
     <addaction name="menuImport"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actioninp">
+  <action name="actionInp">
    <property name="text">
     <string>inp</string>
    </property>

@@ -128,4 +128,8 @@ class Parser(object):
     @property
     def materials(self) -> dict:
         return self._materials
+    
+    @property
+    def sections(self) -> dict:
+        return self._sections
         

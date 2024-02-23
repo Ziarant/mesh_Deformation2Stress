@@ -35,7 +35,7 @@
 - <b>输出:</b>以`np.ndarray(N, 2)`格式输出节点上应力张量, 其中N为节点数量，第1列为节点编号，第2列为元组形式表示的无量纲张量值(节点平均)。
 
 ## 快速使用
-
+### 终端环境
 在python环境中运行`main.py`：
 
 ```
@@ -57,6 +57,12 @@ python main.py source.inp target.inp \
 - unit:单位制(默认为`'N-mm'`)
 - boundary:边界点监测(默认为`False`，开启后将视0位移边界点为固定约束，并基于力学平衡进行补偿计算，当前版本此参数无影响，计划在V2后续版本进行开发)
 - registration: 配准方法，用于平滑或补偿(默认为`None`，当前版本此参数无影响，计划在V2后续版本进行开发)；
+
+### 可视化程序
+运行：
+```
+python main_GUI.py
+```
 
 ## [已完成工作](FinishedWork.md)
 ## [未来工作](FutureWork.md)
