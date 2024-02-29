@@ -29,6 +29,10 @@ class BaseSection(ABC):
         self._material = material
         
     @property
+    def id(self):
+        return self._id
+        
+    @property
     def name(self):
         return self._name
     

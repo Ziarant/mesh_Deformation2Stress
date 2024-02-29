@@ -34,4 +34,6 @@ class CMainWindow(QMainWindow):
         if inpName == '':
             return
         modelHandle = importInp(inpName)
+        modelHandle.setTreeWidget(self.modelTreeWidget)
+        modelHandle.updateItems()
         print(modelHandle.name)

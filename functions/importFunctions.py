@@ -5,7 +5,7 @@ from conversion.loadInp import LoadInp
 from _parser.parser import Parser
 from _parser.handler import Handler
 
-def importInp(inpFileName:str):
+def importInp(inpFileName:str) -> Handler:
     '''
     import inp file and return a FEM-Handler object
     '''

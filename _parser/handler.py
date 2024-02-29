@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 from _parser.parser import Parser
 from viewer.handles import *
+from PyQt5.QtWidgets import QTreeWidget
 
 class Handler(object):
     '''
@@ -12,6 +13,8 @@ class Handler(object):
     def __init__(self, parser:Parser):
         self._name = None
         self._parser = parser
+        
+        self._treeWidget:QTreeWidget = None
         
         self._nodes = self._parser.nodes
         self._elements = self._parser.elements
@@ -40,6 +43,18 @@ class Handler(object):
             
     def setName(self, name:str):
         self._name = name
+        
+    def setTreeWidget(self, treeWidget:QTreeWidget):
+        self._treeWidget = treeWidget
+        
+    def updateItems(self):
+        # 添加Component
+        for compName in self._componentHandle.keys():
+            compHandle = self._componentHandle[compName]
+            compTreeItem = compHandle.treeItem
+            self.treeWidget.componentRootItem.addChild(compTreeItem)
+            
+        self.treeWidget.updateRootItems()
     
     @property
     def name(self) -> str:
@@ -60,3 +75,7 @@ class Handler(object):
     @property
     def componentHandle(self) -> dict:
         return self._componentHandle
+    
+    @property
+    def treeWidget(self) -> QTreeWidget:
+        return self._treeWidget

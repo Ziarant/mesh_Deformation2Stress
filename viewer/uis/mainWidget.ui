@@ -78,10 +78,20 @@ QTabBar::tab:!selected {
         </attribute>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QTreeWidget" name="modelTreeWidget">
+          <widget class="CTreeWidget" name="modelTreeWidget">
            <column>
             <property name="text">
-             <string notr="true">1</string>
+             <string notr="true">Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>id</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Color</string>
             </property>
            </column>
           </widget>
@@ -142,6 +152,13 @@ QTabBar::tab:!selected {
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>./viewer/widgets/cTreeWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

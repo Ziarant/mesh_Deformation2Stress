@@ -22,3 +22,7 @@ class BaseHandle(object):
         创建可视化模型对象
         '''
         pass
+    
+    @property
+    def treeItem(self) -> QTreeWidgetItem:
+        return self._treeItem

@@ -16,11 +16,17 @@ def check_line_start(pattern:str, line:str) -> bool:
 def getElementType(line:str):
     '''
     Get element type from the line.
+    ---
+    Example:
+    line: *ELEMENT, TYPE=C3D8R, ELSET=Source
     '''
     line = line.strip()
     element_info = line.split(',')
     elemType = element_info[1].strip()[5:]
-    elemSet = element_info[2].strip()[6:]
+    if len(element_info) > 2:
+        elemSet = element_info[2].strip()[6:]
+    else:
+        elemSet = None
     return elemType, elemSet
 
 class LoadInp(BaseLoader):
@@ -76,6 +82,8 @@ class LoadInp(BaseLoader):
             self._nodes.append([label, x, y, z])
             
     def parseElements(self, elem_start_line:int, elemType:str, elemSet:str):
+        if elemSet is None:
+            elemSet = 'Auto'
         if elemType not in self._elements.keys():
             self._elements[elemType] = {}
         if elemSet not in self._elements[elemType].keys():
@@ -104,7 +112,10 @@ class LoadInp(BaseLoader):
         
         mat_type_line = self._context[material_start_line + 1]
         matTypeLine = mat_type_line.split('=')
-        matType = matTypeLine[1].strip()
+        try:
+            matType = matTypeLine[1].strip()
+        except:
+            matType = 'ISOTROPIC'
         
         mat_data_line = self._context[material_start_line + 2]
         matdata = []
