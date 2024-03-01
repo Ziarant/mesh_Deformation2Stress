@@ -8,7 +8,7 @@ from .matrix.bMatrix import BMatrix
 from .baseSet import BaseSet
 from .baseSection import BaseSection
 
-ELEMENTTYPELIST = ['S3', 'S4', 'S4R']
+ELEMENTTYPELIST = ['S3', 'S4', 'S4R', 'C3D4']
 
 # Guss Qadrature : list[N, N]
 GAUSS_S3 = [[1.0/3, 1.0/3, 1.0/3]]
@@ -49,6 +49,10 @@ class BaseElement(ABC):
 		self._B_Matrix = BMatrix(self)
 		self._solutions = {}
   
+		self._vertexes:np.ndarray = None
+		self._edges:np.ndarray = None
+		self._faces:np.ndarray = None
+
 		self.updateFreedomSignature()
   
 	def setType(self, elemType:str):
@@ -127,7 +131,16 @@ class BaseElement(ABC):
 		output = 'Element label:{} \t {} \t {} \t value: \t{}'.format(self.label, key, key2, solution)		
 		print(output)
   
+	def initShape(self):
+		'''
+		初始化 vertexes, faces, edges信息
+  		'''
+		pass
+  
 	def updateFreedomSignature(self):
+		'''
+		更新节点自由度符号
+  		'''
 		pass
 
 	def updateNodes(self):
@@ -236,6 +249,18 @@ class BaseElement(ABC):
 	@property
 	def is3D(self):
 		return self._is3D
+
+	@property
+	def vertexes(self) -> np.ndarray:
+		return self._vertexes
+
+	@property
+	def edges(self) -> np.ndarray:
+		return self._edges
+
+	@property
+	def faces(self) -> np.ndarray:
+		return self._faces
 
 	@property
 	def component(self):

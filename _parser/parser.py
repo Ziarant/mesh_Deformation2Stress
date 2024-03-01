@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 
 from conversion.loader import BaseLoader
+from objects.part import Part
 from objects.nodes import Node
 from objects.baseElement import ELEMENTTYPELIST, BaseElement
 from objects.elements import *
@@ -19,6 +20,7 @@ class Parser(object):
     def __init__(self, loader:BaseLoader, isSource:bool = True):
         self._loader = loader
         
+        self._partsDict:dict = {}
         self._nodesMap:map = None
         self._elementsMap:map = None
         self._nodesList:list = None
@@ -30,14 +32,20 @@ class Parser(object):
         self.instantiate(isSource)
         
     def instantiate(self, isSource:bool = True):
+        self.instantiateParts()
         self.instantiateNodes()
         if isSource:
             self.instantiateMaterials()
             self.instantiateElements()
             self.instantiateSections()
+            
+    def instantiateParts(self):
+        for partName in self._loader.parts:
+            self._partsDict[partName] = Part(partName)
+            self._nodesDict[partName] = {}
         
     def instantiateNodes(self):
-        isinstiateNode = lambda x : Node(x[0], x[1], x[2], x[3])
+        isinstiateNode = lambda x : Node(x[0], x[1], x[2], x[3], self._partsDict[x[4]])
         
         nodes = self._loader.nodes
         self._nodesMap:map = map(isinstiateNode, nodes)
@@ -49,16 +57,18 @@ class Parser(object):
         Create a mapping between labels and nodes.
         '''
         for node in self._nodesList:
-            self._nodesDict[str(node.label)] = node
+            partName = node.part.name
+            self._nodesDict[partName][str(node.label)] = node
         
     def instiateElement(self, elementInfo:list) -> BaseElement:
         elemType = elementInfo[0]
         label = elementInfo[1]
         elemSet = elementInfo[2]
         nodesIndexList:list = elementInfo[3]
+        partName:str = elementInfo[4]
         nodes:list = []
         for nodeLabel in nodesIndexList:
-            nodes.append(self._nodesDict[str(nodeLabel)])
+            nodes.append(self._nodesDict[partName][str(nodeLabel)])
         if elemType not in globals().keys():
             return None
         return globals()[elemType](label, elemSet, nodes)
@@ -74,8 +84,9 @@ class Parser(object):
                 elementInfos:list = elementsDict[elemType][elemSet]
                 for elementInfo in elementInfos:
                     label = elementInfo[0]
-                    nodes = elementInfo[1:]
-                    elements.append([elemType, label, elemSet, nodes])
+                    nodes = elementInfo[1:-1]
+                    partName = elementInfo[-1]
+                    elements.append([elemType, label, elemSet, nodes, partName])
                 
         self._elementsMap:map = map(self.instiateElement, elements)
         self._elementsList:list = list(self._elementsMap)

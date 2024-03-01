@@ -3,11 +3,15 @@ import sys, re
 sys.path.append('..')
 from .loader import BaseLoader
     
-def check_line_start(pattern:str, line:str) -> bool:
+def check_line_start(pattern:str, line:str, eliminate:str = None) -> bool:
     '''
     Check whether it is the starting line of nodes/elements/materials…
+    eliminate: str. If the string is included, `False` is returned.
     '''
     # pattern = r'\*Element'
+    if eliminate is not None:
+        if re.search(eliminate, line, re.IGNORECASE):
+            return False
     if re.search(pattern, line, re.IGNORECASE):
         return True
     else:
@@ -40,22 +44,26 @@ class LoadInp(BaseLoader):
         node_start_line = 0
         element_start_line = 0
         material_start_line = 0
-        property_start_line = 0
+        currentPartName = 'Part-1'
         for idx, line in enumerate(self._context):
-            if check_line_start(r'\*Node', line):
+            if check_line_start(r'\*Part', line):
+                part_start_line = idx
+                currentPartName = self.parseParts(part_start_line)
+            
+            if check_line_start(r'\*Node', line, r'\*Node Output'):
                 node_start_line = idx + 1
-                self.parseNodes(node_start_line)
+                self.parseNodes(node_start_line, partName=currentPartName)
                 
             if check_line_start(r'\*Element', line):
                 element_start_line = idx + 1
                 elemType, elemSet = getElementType(line)
-                self.parseElements(element_start_line, elemType, elemSet)
+                self.parseElements(element_start_line, elemType, elemSet, currentPartName)
                 
             if check_line_start(r'\*Material', line):
                 material_start_line = idx
                 self.parseMaterials(material_start_line)
                 
-            if check_line_start(r'\*SHELL SECTION', line):
+            if check_line_start(r'\*SHELL SECTION,', line):
                 shell_section_start_line = idx
                 self.parseShellSection(shell_section_start_line)
             
@@ -65,8 +73,18 @@ class LoadInp(BaseLoader):
             raise ValueError('No element line found in %s'%self.path)
         if material_start_line == 0:
             print('Warning: No material line found in %s'%self.path)
+            
+    def parseParts(self, part_start_line:int):
+        line = self._context[part_start_line]
+        part_info = line.split('=')
+        if len(part_info) == 1:
+            partName = 'Part-1'
+        else:
+            partName = part_info[1].strip()
+        self._parts.append(partName)
+        return partName
     
-    def parseNodes(self, node_start_line:int):
+    def parseNodes(self, node_start_line:int, partName:str = 'Part-1'):
         for line in self._context[node_start_line:]:
             line = line.strip()
             
@@ -79,9 +97,9 @@ class LoadInp(BaseLoader):
             y = float(node_info[2].strip())
             # Warning: It's not certain that it contains z
             z = float(node_info[3].strip())
-            self._nodes.append([label, x, y, z])
+            self._nodes.append([label, x, y, z, partName])
             
-    def parseElements(self, elem_start_line:int, elemType:str, elemSet:str):
+    def parseElements(self, elem_start_line:int, elemType:str, elemSet:str, partName = 'Part-1'):
         if elemSet is None:
             elemSet = 'Auto'
         if elemType not in self._elements.keys():
@@ -103,14 +121,21 @@ class LoadInp(BaseLoader):
             for i in range(numNodes):
                 nodeLabel = int(elem_info[i + 1].strip())
                 data.append(nodeLabel)
+            data.append(partName)
             self._elements[elemType][elemSet].append(data)
             
     def parseMaterials(self, material_start_line:int):
+        '''
+        '''
         mat_start_line = self._context[material_start_line]
         matStartLine = mat_start_line.split('=')
         matName = matStartLine[1].strip()
         
         mat_type_line = self._context[material_start_line + 1]
+        # 当前只考虑弹性，忽略空材料设置及其他
+        # TODO：更多材料选择
+        if not re.search(r'\*Elastic', mat_type_line, re.IGNORECASE):
+            return
         matTypeLine = mat_type_line.split('=')
         try:
             matType = matTypeLine[1].strip()

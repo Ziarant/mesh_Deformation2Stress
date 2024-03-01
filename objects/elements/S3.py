@@ -44,3 +44,10 @@ class S3(BaseElement):
         self.setNodes(nodes)
 
         self.setGaussPoints(self.gauss)
+        self.initShape()
+        
+    def initShape(self):
+        nodes = self.nodes
+        self._vertexes = np.array([nodes[0].coord, nodes[1].coord, nodes[2].coord])
+        self._faces = np.array([[0, 1, 2]])
+        self._edges = np.array([[0, 1], [1, 2], [2, 0]])

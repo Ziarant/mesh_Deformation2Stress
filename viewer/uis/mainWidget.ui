@@ -107,7 +107,7 @@ QTabBar::tab:!selected {
       <widget class="QWidget" name="gridLayoutWidget">
        <layout class="QGridLayout" name="_3DLayout">
         <item row="0" column="0">
-         <widget class="QOpenGLWidget" name="openGLWidget">
+         <widget class="C3DWidget" name="openGLWidget">
           <property name="minimumSize">
            <size>
             <width>800</width>
@@ -143,7 +143,13 @@ QTabBar::tab:!selected {
     </widget>
     <addaction name="menuImport"/>
    </widget>
+   <widget class="QMenu" name="menusetting">
+    <property name="title">
+     <string>设置</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menusetting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionInp">
@@ -157,6 +163,11 @@ QTabBar::tab:!selected {
    <class>CTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header>./viewer/widgets/cTreeWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>C3DWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>./viewer/widgets/c3DWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

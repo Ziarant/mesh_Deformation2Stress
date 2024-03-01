@@ -15,7 +15,7 @@ class CMainWindow(QMainWindow):
         
         super(CMainWindow, self).__init__()
         self.ui = loadUi(self.path + '\\uis\\mainWidget.ui', self)
-        self._initUI()
+        # self._initUI()
         self.showMaximized()
         
         # 绑定事件
@@ -33,7 +33,6 @@ class CMainWindow(QMainWindow):
         inpName = inpName[0]
         if inpName == '':
             return
-        modelHandle = importInp(inpName)
+        modelHandle = importInp(inpName, viewport = self.openGLWidget)
         modelHandle.setTreeWidget(self.modelTreeWidget)
         modelHandle.updateItems()
-        print(modelHandle.name)

@@ -3,6 +3,7 @@ import numpy as np
 class BaseLoader(object):
     def __init__(self, path:str):
         self._path:str = path
+        self._parts:list = []
         self._nodes:list = []
         self._elements:dict = {}
         self._sections:dict = {}
@@ -26,6 +27,13 @@ class BaseLoader(object):
         return self._sections
     
     @property
+    def parts(self) -> list:
+        if len(self._parts) == 0:
+            self._parts = list(self.elements.keys())
+            self._parts = ['Part-1']
+        return self._parts
+    
+    @property
     def properties(self) -> dict:
         return self._properties
     
@@ -33,7 +41,7 @@ class BaseLoader(object):
     def materials(self) -> dict:
         return self._materials
         
-        
+# loader.parts: list[P] = partName
 # loader.nodes: list[N] = [label, x, y, z]
 # loader.element: dict[TYPE][ELSET] = [label, n1, n2, …]
 # loader.properties:dict[NAME] = [ELSET, MATERIAL, DATA]

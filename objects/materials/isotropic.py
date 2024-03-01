@@ -4,6 +4,9 @@ sys.path.append("..")
 from objects.baseMaterial import BaseMaterial
 
 class ISOTROPIC(BaseMaterial):
+    '''
+    Isotropic Linear Elastic Material
+    '''
     def __init__(self, name:str, data:list):
         if name not in BaseMaterial._instances.keys():
             BaseMaterial._instances[name] = self
@@ -16,9 +19,10 @@ class ISOTROPIC(BaseMaterial):
         self.parse()
         
     def parse(self):
-        self._elastMod:float = self._data[0]
-        self._poisson:float = self._data[1]
-        self._density:float = self._data[2]
+        nData = len(self.data)
+        self._elastMod:float = self.data[0]
+        self._poisson:float = self.data[1]
+        self._density:float = self.data[2] if nData > 2 else 0.0
         self._shearMod:float = self.E / (2*(1-self.nu))
         self.calElasticTensor()
     

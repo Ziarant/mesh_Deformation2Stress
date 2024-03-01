@@ -5,7 +5,7 @@ class Node(object):
     Base class for nodes.
     '''
     _nextId = 1
-    def __init__(self, label:int, x:float, y:float, z:float=0.0):
+    def __init__(self, label:int, x:float, y:float, z:float=0.0, part:object = None):
         self._id = Node._nextId
         Node._nextId += 1
         
@@ -17,6 +17,7 @@ class Node(object):
         self._NFS = [0,0,0,0,0,0]
         self._solutions = {}
         self._elements = {}
+        self._part:object = part
         
         # Properties
         self._isOnSurface = False
@@ -31,6 +32,9 @@ class Node(object):
         self._y = y
         self._z = z
         return self.coord
+    
+    def setPart(self, part:object):
+        self._part = part
     
     def appendElement(self, element):
         self._elements[element.id] = element
@@ -91,6 +95,10 @@ class Node(object):
     @property
     def NFS(self) -> list:
         return self._NFS
+    
+    @property
+    def part(self) -> object:
+        return self._part
     
     @property
     def solutions(self) -> dict:
