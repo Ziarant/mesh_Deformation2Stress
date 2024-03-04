@@ -19,11 +19,25 @@ class CMainWindow(QMainWindow):
         self.showMaximized()
         
         # 绑定事件
+        self.actionStl.triggered.connect(self.actionStl_clicked)
         self.actionInp.triggered.connect(self.actionInp_clicked)
     
     def _initUI(self):
         _3DWidget = C3DWidget(self)
         self._3DLayout.addWidget(_3DWidget, 0, 0)
+        
+    def actionStl_clicked(self):
+        stlName = QFileDialog.getOpenFileName(self,
+                                              caption = '选择stl',
+                                              directory= self.parentPath,
+                                              filter = 'stl(*.stl)')
+        stlName = stlName[0]
+        if stlName == '':
+            return
+        modelHandle = importStl(stlName, viewport = self.openGLWidget)
+        modelHandle.setTreeWidget(self.modelTreeWidget)
+        modelHandle.updateItems()
+        
         
     def actionInp_clicked(self):
         inpName = QFileDialog.getOpenFileName(self, 

@@ -139,6 +139,7 @@ QTabBar::tab:!selected {
      <property name="title">
       <string>Import</string>
      </property>
+     <addaction name="actionStl"/>
      <addaction name="actionInp"/>
     </widget>
     <addaction name="menuImport"/>
@@ -155,6 +156,11 @@ QTabBar::tab:!selected {
   <action name="actionInp">
    <property name="text">
     <string>inp</string>
+   </property>
+  </action>
+  <action name="actionStl">
+   <property name="text">
+    <string>stl</string>
    </property>
   </action>
  </widget>
