@@ -8,11 +8,13 @@ from objects.sets.component import Component
 class SHELLSECTION(BaseSection):
     
     _nextId = 1
-    def __init__(self, compName:str, matName:str, sectionData:list):
+    def __init__(self, compName:str, matName:str = None, sectionData:list = None):
         self.setName(compName)
-        _material = BaseMaterial.call(matName)
-        self.setMaterial(_material)
-        self.setData(sectionData)
+        if matName is not None:
+            _material = BaseMaterial.call(matName)
+            self.setMaterial(_material)
+        if sectionData is not None:
+            self.setData(sectionData)
         
         self._id = SHELLSECTION._nextId
         SHELLSECTION._nextId += 1

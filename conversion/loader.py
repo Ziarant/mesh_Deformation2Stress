@@ -29,7 +29,7 @@ class BaseLoader(object):
     @property
     def parts(self) -> list:
         if len(self._parts) == 0:
-            self._parts = list(self.elements.keys())
+            # self._parts = list(self.elements.keys())
             self._parts = ['Part-1']
         return self._parts
     

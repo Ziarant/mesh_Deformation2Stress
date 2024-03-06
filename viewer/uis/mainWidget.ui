@@ -149,7 +149,14 @@ QTabBar::tab:!selected {
      <string>设置</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuFitting">
+    <property name="title">
+     <string>拟合</string>
+    </property>
+    <addaction name="actionSSM"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuFitting"/>
    <addaction name="menusetting"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -161,6 +168,11 @@ QTabBar::tab:!selected {
   <action name="actionStl">
    <property name="text">
     <string>stl</string>
+   </property>
+  </action>
+  <action name="actionSSM">
+   <property name="text">
+    <string>SSM</string>
    </property>
   </action>
  </widget>

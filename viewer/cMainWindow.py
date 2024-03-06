@@ -38,7 +38,6 @@ class CMainWindow(QMainWindow):
         modelHandle.setTreeWidget(self.modelTreeWidget)
         modelHandle.updateItems()
         
-        
     def actionInp_clicked(self):
         inpName = QFileDialog.getOpenFileName(self, 
                                               caption = '选择inp',
